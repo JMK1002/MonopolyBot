@@ -5,7 +5,7 @@ import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 
 import javax.security.auth.login.LoginException;
-import java.util.*;
+import io.github.cdimascio.dotenv.Dotenv;
 
 public class Bot {
     // phase 0: before the game starts adding / removing players
@@ -16,8 +16,9 @@ public class Bot {
     public static JDA bot;
 
     public static void main(String[] args) throws LoginException {
+        Dotenv dotenv = Dotenv.configure().filename("src\\main\\java\\Monopoly\\key.env").load();
+        String Token = dotenv.get("TOKEN");
         BoardData.InstantiateData();
-        String Token = "MTAxMDk4NzcyOTQzMTA0NDIwOA.G3kBFb.LDxWI18grYtZ2ycOp5_pWAjKd5uFxcjJ-2z0js";
         bot = (JDA) JDABuilder.createDefault(Token)
                 .setEnabledIntents(GatewayIntent.getIntents(GatewayIntent.ALL_INTENTS))
                 .setActivity(Activity.playing("Monopoly"))
