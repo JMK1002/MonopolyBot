@@ -16,7 +16,7 @@ public class Bot {
     public static JDA bot;
 
     public static void main(String[] args) throws LoginException {
-        Dotenv dotenv = Dotenv.configure().filename("src\\main\\java\\Monopoly\\key.env").load();
+        Dotenv dotenv = Dotenv.configure().filename("\\.idea\\key.env").load();
         String Token = dotenv.get("TOKEN");
         BoardData.InstantiateData();
         bot = (JDA) JDABuilder.createDefault(Token)
