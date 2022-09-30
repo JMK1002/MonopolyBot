@@ -12,7 +12,7 @@ public class Auction {
 
 
     public Auction(int topBidder, int property) {
-        Commands.event.getChannel().sendMessage("Bid started with a starting bid of $1 from " + Player.playerNames.get(topBidder)).queue();
+        Commands.Say("Bid started with a starting bid of $1 from " + Player.playerNames.get(topBidder));
         this.topBidder = topBidder;
         this.property = property;
         quitBidders = new ArrayList<>();
@@ -59,9 +59,14 @@ public class Auction {
             return;
         }
 
+        if (topBidder == player) {
+            Commands.Say("Cant Quit As the Top Bidder! :)");
+            return;
+        }
+
         if (!quitBidders.contains(player)) {
             quitBidders.add(player);
-            Commands.event.getChannel().sendMessage(Player.playerNames.get(player) + " Has Quit the Bid!").queue();
+            Commands.Say(Player.playerNames.get(player) + " Has Quit the Bid!");
             if (quitBidders.size() == Player.playerObjects.size() - 1) {
                 FinishAuction();
             }
@@ -70,7 +75,7 @@ public class Auction {
 
     private void FinishAuction() {
         running = false;
-        Commands.event.getChannel().sendMessage(Player.playerNames.get(topBidder) + " Won the bid for $" + amount).queue();
+        Commands.Say(Player.playerNames.get(topBidder) + " Won the bid for $" + amount);
         Player.playerObjects.get(topBidder).subtractMoney(amount);
         Player.playerObjects.get(topBidder).addProperty(property);
         System.out.println(Player.playerObjects.get(topBidder).getMoney());
@@ -78,10 +83,8 @@ public class Auction {
     }
 
     private void Announce() {
-        Commands.event.getChannel().sendMessage(Player.playerNames.get(topBidder) + " Bid $" + amount + "\nOriginal Price: $" + BoardData.propertyData.get(property)[0]).queue();
+        Commands.Say(Player.playerNames.get(topBidder) + " Bid $" + amount + "\nOriginal Price: $" + BoardData.propertyData.get(property)[0]);
     }
 
-    private void CantBid() {
-        Commands.event.getChannel().sendMessage("Could not bid on this property!").queue();
-    }
+    private void CantBid() { Commands.Say("Could not bid on this property!"); }
 }
