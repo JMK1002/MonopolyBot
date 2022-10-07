@@ -10,6 +10,8 @@ public class Player {
     private int money;
     private ArrayList<Integer> properties;
     private ArrayList<Integer> houses;
+    private int[] coloredProperties;
+    private ArrayList<Integer> monopolies;
     public static List<String> players = new ArrayList<>();
     public static List<String> playerNames = new ArrayList<>();
     public static List<Player> playerObjects;
@@ -17,6 +19,7 @@ public class Player {
     public Player (String name, String mention) {
         this.name = name;
         this.mention = mention;
+        coloredProperties = new int[8];
         properties = new ArrayList<Integer>();
         houses = new ArrayList<Integer>();
         boardPos = 0;
@@ -27,6 +30,7 @@ public class Player {
         this.name = name;
         this.mention = mention;
         this.boardPos = boardPos;
+        coloredProperties = new int[8];
         properties = new ArrayList<Integer>();
         houses = new ArrayList<Integer>();
         this.money = money;
@@ -58,8 +62,13 @@ public class Player {
     }
 
     public void addProperty(int property) {
+        int color = BoardData.monopolyData[tile];
         properties.add(property);
         houses.add(0);
+        coloredProperties[color]++;
+        if (!monopolies.contains(color) && (color == 1 || color == 8)) {
+            if (coloredProperties[color] == 2) {}
+        }
     }
 
     public int getHouses(int property) {
