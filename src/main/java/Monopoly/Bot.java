@@ -9,17 +9,17 @@ import io.github.cdimascio.dotenv.Dotenv;
 
 public class Bot {
     // phase 0: before the game starts adding / removing players
-    public static int phase = 0;
+    protected static int phase = 0;
     // phase 0: roll die (the persons turn is playerNames.get(turn)
-    public static int rollingPhase = -1;
-    public static int turn = -1;
-    public static JDA bot;
+    protected static int rollingPhase = -1;
+    protected static int turn = -1;
+    protected static JDA bot;
 
     public static void main(String[] args) throws LoginException {
         Dotenv dotenv = Dotenv.configure().filename("\\.idea\\key.env").load();
         String Token = dotenv.get("TOKEN");
-        BoardData.InstantiateData();
-        bot = (JDA) JDABuilder.createDefault(Token)
+        BoardData.innit();
+        bot = JDABuilder.createDefault(Token)
                 .setEnabledIntents(GatewayIntent.getIntents(GatewayIntent.ALL_INTENTS))
                 .setActivity(Activity.playing("Monopoly"))
                 .addEventListeners(new Commands())

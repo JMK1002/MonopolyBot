@@ -20,8 +20,9 @@ public class Player {
         this.name = name;
         this.mention = mention;
         coloredProperties = new int[8];
-        properties = new ArrayList<Integer>();
-        houses = new ArrayList<Integer>();
+        monopolies = new ArrayList<>();
+        properties = new ArrayList<>();
+        houses = new ArrayList<>();
         boardPos = 0;
         money = 1500;
     }
@@ -31,8 +32,9 @@ public class Player {
         this.mention = mention;
         this.boardPos = boardPos;
         coloredProperties = new int[8];
-        properties = new ArrayList<Integer>();
-        houses = new ArrayList<Integer>();
+        monopolies = new ArrayList<>();
+        properties = new ArrayList<>();
+        houses = new ArrayList<>();
         this.money = money;
     }
 
@@ -62,12 +64,21 @@ public class Player {
     }
 
     public void addProperty(int property) {
-        int color = BoardData.monopolyData[tile];
+        int color = BoardData.monopolyData[property];
         properties.add(property);
         houses.add(0);
-        coloredProperties[color]++;
+        coloredProperties[color - 1]++;
         if (!monopolies.contains(color) && (color == 1 || color == 8)) {
-            if (coloredProperties[color] == 2) {}
+            if (coloredProperties[color - 1] == 2) {
+                monopolies.add(color);
+                Commands.Say("Monopoly " + color + " has been obtained!!!");
+            }
+        }
+        else {
+            if (coloredProperties[color - 1] == 3) {
+                monopolies.add(color);
+                Commands.Say("Monopoly " + color + " has been obtained!!!");
+            }
         }
     }
 

@@ -33,6 +33,7 @@ public class Commands extends ListenerAdapter {
         commandMatrix.put("-auction", new Boolean[]{Bot.phase == 1, Bot.rollingPhase == 1, true});
         commandMatrix.put("-bid", new Boolean[]{Bot.phase == 1, Bot.rollingPhase == 2, true});
         commandMatrix.put("-quit", new Boolean[]{Bot.phase == 1, Bot.rollingPhase == 2, true});
+        commandMatrix.put("-boardpos", new Boolean[]{true, true, true});
 
         if (args[0].startsWith("-")) { // is command?
             Boolean[] preset = commandMatrix.get(args[0]);
@@ -156,10 +157,12 @@ public class Commands extends ListenerAdapter {
                     Bot.rollingPhase = 1;
                     DisplayTile(event, "You Landed Here:\nCost: $" + BoardData.propertyData.get(boardPos)[0].toString(), boardPos);
                 } else { // make them pay
-                    int money = BoardData.propertyData.get(boardPos)[1 + Player.playerObjects.get(owner).getHouses(boardPos)];
-                    player.subtractMoney(money);
-                    player.addMoney(money);
-                    Say("You Landed On " + Player.playerNames.get(owner) + "'s Property.\nYou Paid $" + money);
+                    if (Bot.turn != owner) {
+                        int money = BoardData.propertyData.get(boardPos)[1 + Player.playerObjects.get(owner).getHouses(boardPos)];
+                        player.subtractMoney(money);
+                        player.addMoney(money);
+                        Say("You Landed On " + Player.playerNames.get(owner) + "'s Property.\nYou Paid $" + money);
+                    }
                     EndTurn();
                 }
             } else {
@@ -167,7 +170,7 @@ public class Commands extends ListenerAdapter {
             }
         }
     }
-    
+
     private static void BuyProperty() {
         Player player = Player.playerObjects.get(Bot.turn);
         int tile = player.getBoardPos();
@@ -191,6 +194,10 @@ public class Commands extends ListenerAdapter {
     private static void QuitBid() {
         int bidder = Player.playerNames.indexOf(event.getAuthor().getName());
         auction.QuitBid(bidder);
+    }
+
+    private static void BoardPos() {
+        Say(Player.playerNames.get(Bot.turn));
     }
 
     private static void CallFunction(String command, String[] args) {
@@ -227,6 +234,9 @@ public class Commands extends ListenerAdapter {
                 break;
             case "-quit":
                 QuitBid();
+                break;
+            case "-boardpos":
+                BoardPos();
                 break;
             default:
         }

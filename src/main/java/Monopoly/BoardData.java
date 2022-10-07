@@ -8,8 +8,8 @@ public class BoardData {
     public static int[] tileIDs;
     public static int[] monopolyData;
 
-    public static void InstantiateData() {
-        propertyData = new HashMap<Integer, Integer[]>();
+    public static void innit() {
+        propertyData = new HashMap<>();
         // 0 is property, 1 is railroad, 2 is chance, 3 is chest, 4 is electric / water works, 5 is other (taxes, jail, go, etc)
         tileIDs = new int[]{5, 0, 3, 0, 5, 1, 0, 2, 0, 0, 5, 0, 4, 0, 0, 1, 0, 3, 0, 0, 5, 0, 2, 0, 0, 1, 0, 0, 4, 0, 5, 0, 0, 3, 0, 1, 2, 0, 5, 0};
         
