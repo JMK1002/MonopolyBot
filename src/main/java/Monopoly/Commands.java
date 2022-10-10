@@ -2,6 +2,7 @@ package Monopoly;
 
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.requests.restaction.MessageAction;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -27,13 +28,14 @@ public class Commands extends ListenerAdapter {
         commandMatrix.put("-removeplayer", new Boolean[]{Bot.phase == 0, true, isMention});
         commandMatrix.put("-displayplayers", new Boolean[]{Bot.phase == 0, true, true});
         commandMatrix.put("-start", new Boolean[]{Bot.phase == 0, true, true});
-        commandMatrix.put("-money", new Boolean[]{true, true, true});
         commandMatrix.put("-roll", new Boolean[]{Bot.phase == 1, Bot.rollingPhase == 0, true});
         commandMatrix.put("-buy", new Boolean[]{Bot.phase == 1, Bot.rollingPhase == 1, true});
         commandMatrix.put("-auction", new Boolean[]{Bot.phase == 1, Bot.rollingPhase == 1, true});
         commandMatrix.put("-bid", new Boolean[]{Bot.phase == 1, Bot.rollingPhase == 2, true});
         commandMatrix.put("-quit", new Boolean[]{Bot.phase == 1, Bot.rollingPhase == 2, true});
+        commandMatrix.put("-money", new Boolean[]{true, true, true});
         commandMatrix.put("-boardpos", new Boolean[]{true, true, true});
+        commandMatrix.put("-properties", new Boolean[]{true, true, true});
 
         if (args[0].startsWith("-")) { // is command?
             Boolean[] preset = commandMatrix.get(args[0]);
@@ -43,26 +45,53 @@ public class Commands extends ListenerAdapter {
         }
     }
 
-    public static String GetDieEmote(int num) {
-        switch (num) {
-            case 1:
-                return "<:dieface1:1011094692588429382>";
-            case 2:
-                return "<:dieface2:1011094691816689734>";
-            case 3:
-                return "<:dieface3:1011094690445152346>";
-            case 4:
-                return "<:dieface4:1011094689111363596>";
-            case 5:
-                return "<:dieface5:1011094688545116160>";
-            case 6:
-                return "<:dieface6:1011094687433637939>";
-            default:
-                return null;
+    private static void CallFunction(String command, String[] args) {
+        switch (command) {
+            case "-clearplayers" -> ClearPlayers();
+            case "-addplayer" -> AddPlayer(args);
+            case "-removeplayer" -> RemovePlayer(args);
+            case "-displayplayers" -> DisplayPlayers();
+            case "-start" -> Start();
+            case "-money" -> DisplayMoney();
+            case "-roll" -> Roll();
+            case "-buy" -> BuyProperty();
+            case "-auction" -> AuctionProperty();
+            case "-bid" -> BidOnAuction(args);
+            case "-quit" -> QuitBid();
+            case "-boardpos" -> BoardPos();
+            case "-properties" -> DisplayProperties(event, Bot.turn);
         }
     }
 
-    public static int PropertyOwned(int tile) {
+    private static void DisplayProperties(MessageReceivedEvent event, int player) {
+        String message = "Properties in their respective order: ";
+        ArrayList<Integer> tiles = Player.playerObjects.get(player).getProperties();
+
+        for (Integer tile : tiles) {
+            message += tile + ", ";
+        }
+        MessageAction actualMessage = event.getChannel().sendMessage(message);
+
+        for (Integer tile : tiles) {
+            File f = new File(Paths.get("Commands.java").toAbsolutePath().getParent().toString() + "\\src\\main\\java\\Images\\" + tile + ".JPG");
+            actualMessage.addFile(f);
+        }
+        actualMessage.queue();
+    }
+
+    private static String GetDieEmote(int num) {
+        return switch (num) {
+            case 1 -> "<:dieface1:1011094692588429382>";
+            case 2 -> "<:dieface2:1011094691816689734>";
+            case 3 -> "<:dieface3:1011094690445152346>";
+            case 4 -> "<:dieface4:1011094689111363596>";
+            case 5 -> "<:dieface5:1011094688545116160>";
+            case 6 -> "<:dieface6:1011094687433637939>";
+            default -> null;
+        };
+    }
+
+    private static int PropertyOwned(int tile) {
         for (int i = 0; i < Player.playerObjects.size(); i++) {
             Player p = Player.playerObjects.get(i);
             if (p.getProperties().contains(tile)) {return i;}
@@ -77,9 +106,8 @@ public class Commands extends ListenerAdapter {
         Say(Player.playerNames.get(Bot.turn) + "'s turn");
     }
 
-    public static void DisplayTile(MessageReceivedEvent event, String message, int tile) {
+    private static void DisplayTile(MessageReceivedEvent event, String message, int tile) {
         File f = new File(Paths.get("Commands.java").toAbsolutePath().getParent().toString() + "\\src\\main\\java\\Images\\" + tile + ".JPG");
-
 
         if (Objects.nonNull(f)) {
             event.getChannel().sendMessage(message).addFile(f).queue();
@@ -150,22 +178,20 @@ public class Commands extends ListenerAdapter {
             int boardPos = player.getBoardPos();
 
 
-            if (BoardData.tileIDs[boardPos] == 0) {
+            if (BoardData.tileIDs[boardPos] == 0 || BoardData.tileIDs[boardPos] == 1) {
                 int owner = PropertyOwned(boardPos);
 
                 if (owner == -1) { // option to buy / auction
                     Bot.rollingPhase = 1;
-                    DisplayTile(event, "You Landed Here:\nCost: $" + BoardData.propertyData.get(boardPos)[0].toString(), boardPos);
+                    if (BoardData.tileIDs[boardPos] == 0) {DisplayTile(event, "You Landed Here:\nCost: $" + BoardData.propertyData.get(boardPos)[0].toString(), boardPos);}
+                    else {DisplayTile(event, "You Landed Here:\nCost: $200", boardPos);}
                 } else { // make them pay
-                    if (Bot.turn != owner) {
-                        int money = BoardData.propertyData.get(boardPos)[1 + Player.playerObjects.get(owner).getHouses(boardPos)];
-                        player.subtractMoney(money);
-                        player.addMoney(money);
-                        Say("You Landed On " + Player.playerNames.get(owner) + "'s Property.\nYou Paid $" + money);
-                    }
+                    if (Bot.turn != owner) {Pay(boardPos, owner, player);}
+                    else {Say("Landed on your own property!");}
                     EndTurn();
                 }
-            } else {
+            }
+            else {
                 EndTurn();
             }
         }
@@ -174,7 +200,9 @@ public class Commands extends ListenerAdapter {
     private static void BuyProperty() {
         Player player = Player.playerObjects.get(Bot.turn);
         int tile = player.getBoardPos();
-        player.subtractMoney(BoardData.propertyData.get(tile)[0]);
+        int amount = (BoardData.tileIDs[tile] == 0) ? BoardData.propertyData.get(tile)[0] : 200;
+        Say("Bought for $" + amount);
+        player.subtractMoney(amount);
         player.addProperty(tile);
         EndTurn();
     }
@@ -197,49 +225,27 @@ public class Commands extends ListenerAdapter {
     }
 
     private static void BoardPos() {
-        Say(Player.playerNames.get(Bot.turn));
+        Say(Player.playerNames.get(Bot.turn) + " is on tile " + Player.playerObjects.get(Bot.turn).getBoardPos());
     }
 
-    private static void CallFunction(String command, String[] args) {
-        switch (command) {
-            case "-clearplayers":
-                ClearPlayers();
+    private static void Pay(int property, int ownerID, Player payer) {
+        int amount = -1;
+        Player owner = Player.playerObjects.get(ownerID);
+        switch (BoardData.tileIDs[property]) {
+            case 0:
+                amount = BoardData.propertyData.get(property)[1 + owner.getHouses(property)];
                 break;
-            case "-addplayer":
-                AddPlayer(args);
+            case 1:
+                ArrayList<Integer> properties = owner.getProperties();
+                int railroadsOwned = 0;
+                for (int i = 0; i < properties.size(); i++) {if (BoardData.tileIDs[properties.get(i)] == 1) {railroadsOwned++;}}
+                amount = 25 * 2^(railroadsOwned - 1);
                 break;
-            case "-removeplayer":
-                RemovePlayer(args);
-                break;
-            case "-displayplayers":
-                DisplayPlayers();
-                break;
-            case "-start":
-                Start();
-                break;
-            case "-money":
-                DisplayMoney();
-                break;
-            case "-roll":
-                Roll();
-                break;
-            case "-buy":
-                BuyProperty();
-                break;
-            case "-auction":
-                AuctionProperty();
-                break;
-            case "-bid":
-                BidOnAuction(args);
-                break;
-            case "-quit":
-                QuitBid();
-                break;
-            case "-boardpos":
-                BoardPos();
-                break;
-            default:
         }
+        payer.subtractMoney(amount);
+        owner.addMoney(amount);
+
+        Say("You Landed On " + Player.playerNames.get(ownerID) + "'s Property.\nYou Paid $" + amount);
     }
 
     public static void Say (String msg) {

@@ -14,7 +14,7 @@ public class Player {
     private ArrayList<Integer> monopolies;
     public static List<String> players = new ArrayList<>();
     public static List<String> playerNames = new ArrayList<>();
-    public static List<Player> playerObjects;
+    public static List<Player>  playerObjects;
 
     public Player (String name, String mention) {
         this.name = name;
@@ -67,6 +67,7 @@ public class Player {
         int color = BoardData.monopolyData[property];
         properties.add(property);
         houses.add(0);
+        if (color == 0) {return;}
         coloredProperties[color - 1]++;
         if (!monopolies.contains(color) && (color == 1 || color == 8)) {
             if (coloredProperties[color - 1] == 2) {
@@ -87,19 +88,31 @@ public class Player {
     }
 
     public void addHouse(int property) {
-        int propertyIndex = properties.indexOf(property);
-        if (houses.get(propertyIndex) < 4) {
-            houses.set(propertyIndex, houses.get(propertyIndex) + 1);
+        int color = BoardData.monopolyData[property];
+        if (monopolies.contains(color)) {
+            int propertyIndex = properties.indexOf(property);
+            if (houses.get(propertyIndex) < 4) {
+                houses.set(propertyIndex, houses.get(propertyIndex) + 1);
+            }
+            subtractMoney(BoardData.propertyData.get(propertyIndex)[7]);
         }
-        subtractMoney(BoardData.propertyData.get(propertyIndex)[7]);
+        else {
+            Commands.Say("You don't have the monopoly for this card!");
+        }
     }
 
     public void mortgageHouse(int property) {
-        int propertyIndex = properties.indexOf(property);
-        if (houses.get(propertyIndex) > -1) {
-            houses.set(propertyIndex, houses.get(propertyIndex) - 1);
+        int color = BoardData.monopolyData[property];
+        if (monopolies.contains(color)) {
+            int propertyIndex = properties.indexOf(property);
+            if (houses.get(propertyIndex) > -1) {
+                houses.set(propertyIndex, houses.get(propertyIndex) - 1);
+            }
+            addMoney(BoardData.propertyData.get(propertyIndex)[7] / 2);
         }
-        addMoney(BoardData.propertyData.get(propertyIndex)[7] / 2);
+        else {
+            Commands.Say("You don't have the monopoly for this card!");
+        }
     }
 
     public int getMoney() {
