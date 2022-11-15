@@ -8,13 +8,16 @@ public class Player {
     private String mention;
     private int boardPos;
     private int money;
+    private boolean rolledDoubles;
+    private int jailTime;
+    private boolean inJail;
     private ArrayList<Integer> properties;
     private ArrayList<Integer> houses;
     private int[] coloredProperties;
     private ArrayList<Integer> monopolies;
     public static List<String> players = new ArrayList<>();
     public static List<String> playerNames = new ArrayList<>();
-    public static List<Player>  playerObjects;
+    public static List<Player> playerObjects;
 
     public Player (String name, String mention) {
         this.name = name;
@@ -25,17 +28,8 @@ public class Player {
         houses = new ArrayList<>();
         boardPos = 0;
         money = 1500;
-    }
-
-    public Player (String name, String mention, int boardPos, int money) {
-        this.name = name;
-        this.mention = mention;
-        this.boardPos = boardPos;
-        coloredProperties = new int[8];
-        monopolies = new ArrayList<>();
-        properties = new ArrayList<>();
-        houses = new ArrayList<>();
-        this.money = money;
+        rolledDoubles = false;
+        inJail = false;
     }
 
     public void addBoardPos (int amount) {
@@ -45,6 +39,10 @@ public class Player {
             boardPos %= 40;
             money += 200;
         }
+    }
+
+    public void setBoardPos (int tile) {
+        boardPos = tile;
     }
 
     public void addMoney (int amount) {
@@ -118,4 +116,20 @@ public class Player {
     public int getMoney() {
         return money;
     }
+
+    public boolean getRolledDoubles() { return rolledDoubles; }
+
+    public void setRolledDoubles(boolean rolledDoubles) {
+        this.rolledDoubles = rolledDoubles;
+    }
+
+    public void setJailTime(int jailTime) {
+        this.jailTime = jailTime;
+    }
+
+    public int getJailTime() {
+        return jailTime;
+    }
+
+    public void decrementJailTime() { jailTime -= 1; }
 }

@@ -5,11 +5,13 @@ import java.util.Map;
 
 public class BoardData {
     public static Map<Integer, Integer[]> propertyData;
+    public static Map<Integer, String> imageLinks;
     public static int[] tileIDs;
     public static int[] monopolyData;
 
     public static void innit() {
         propertyData = new HashMap<>();
+        imageLinks = new HashMap<>();
         // 0 is property, 1 is railroad, 2 is chance, 3 is chest, 4 is electric / water works, 5 is other (taxes, jail, go, etc)
         tileIDs = new int[]{5, 0, 3, 0, 5, 1, 0, 2, 0, 0, 5, 0, 4, 0, 0, 1, 0, 3, 0, 0, 5, 0, 2, 0, 0, 1, 0, 0, 4, 0, 5, 0, 0, 3, 0, 1, 2, 0, 5, 0};
         
@@ -40,5 +42,34 @@ public class BoardData {
         propertyData.put(34, new Integer[]{320, 28, 150, 450, 1000, 1200, 1400, 200});
         propertyData.put(37, new Integer[]{350, 35, 175, 500, 1100, 1300, 1500, 200});
         propertyData.put(39, new Integer[]{400, 50, 200, 600, 1400, 1700, 2000, 200});
+
+        imageLinks.put(1, "https://imgur.com/jsuD0D1");
+        imageLinks.put(3, "https://imgur.com/XGYQL5A");
+        imageLinks.put(5, "https://imgur.com/x7OlnHo");
+        imageLinks.put(6, "https://imgur.com/l5f1Gys");
+        imageLinks.put(8, "https://imgur.com/wEPoXaA");
+        imageLinks.put(9, "https://imgur.com/JbRQmYw");
+        imageLinks.put(11, "https://imgur.com/IJD2ba2");
+        imageLinks.put(12, "https://imgur.com/ynpLb9e");
+        imageLinks.put(13, "https://imgur.com/qw6oF8E");
+        imageLinks.put(14, "https://imgur.com/GuNRSJq");
+        imageLinks.put(15, "https://imgur.com/ZMUuLAW");
+        imageLinks.put(16, "https://imgur.com/XYGm6vT");
+        imageLinks.put(18, "https://imgur.com/GIKGdY3");
+        imageLinks.put(19, "https://imgur.com/7QstIQV");
+        imageLinks.put(21, "https://imgur.com/Z0z43w2");
+        imageLinks.put(23, "https://imgur.com/UUaYb82");
+        imageLinks.put(24, "https://imgur.com/fasxuoX");
+        imageLinks.put(25, "https://imgur.com/kMTXjn1");
+        imageLinks.put(26, "https://imgur.com/GVQWax5");
+        imageLinks.put(27, "https://imgur.com/u0wyYu8");
+        imageLinks.put(28, "https://imgur.com/T1zZ4Ds");
+        imageLinks.put(29, "https://imgur.com/OvJDKFm");
+        imageLinks.put(31, "https://imgur.com/YMpVlGr");
+        imageLinks.put(32, "https://imgur.com/rpVFVWe");
+        imageLinks.put(34, "https://imgur.com/aOogASA");
+        imageLinks.put(35, "https://imgur.com/AxZwhDv");
+        imageLinks.put(37, "https://imgur.com/NC7zUos");
+        imageLinks.put(39, "https://imgur.com/gOcvAbb");
     }
 }

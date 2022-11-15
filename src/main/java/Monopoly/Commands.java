@@ -1,11 +1,19 @@
 package Monopoly;
 
+import net.dv8tion.jda.api.interactions.components.selections.SelectMenu;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
 import org.jetbrains.annotations.NotNull;
 
+import  me.chyxion.image.ImageCombine;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -19,7 +27,6 @@ public class Commands extends ListenerAdapter {
         String[] args = event.getMessage().getContentRaw().toLowerCase().split(" ");
         String paramater = (args.length <= 1) ? "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" : args[1];
         boolean isMention = paramater.charAt(0) == '<' && paramater.charAt(1) == '@' && paramater.charAt(paramater.length() - 1) == '>'; // if a string is a mention
-
 
         // command, Bot phase, rolling phase, extra bool statements (with and)
         Map<String, Boolean[]> commandMatrix = new HashMap<>();
@@ -40,12 +47,16 @@ public class Commands extends ListenerAdapter {
         if (args[0].startsWith("-")) { // is command?
             Boolean[] preset = commandMatrix.get(args[0]);
             if (preset[0] && preset[1] && preset[2]) {
-                CallFunction(args[0], args);
+                try {
+                    CallFunction(args[0], args);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
 
-    private static void CallFunction(String command, String[] args) {
+    private static void CallFunction(String command, String[] args) throws IOException {
         switch (command) {
             case "-clearplayers" -> ClearPlayers();
             case "-addplayer" -> AddPlayer(args);
@@ -59,24 +70,47 @@ public class Commands extends ListenerAdapter {
             case "-bid" -> BidOnAuction(args);
             case "-quit" -> QuitBid();
             case "-boardpos" -> BoardPos();
-            case "-properties" -> DisplayProperties(event, Bot.turn);
+//          case "-properties" -> DisplayProperties(Bot.turn);
         }
     }
 
-    private static void DisplayProperties(MessageReceivedEvent event, int player) {
+//    private static void DisplayProperties(MessageReceivedEvent event, int player) throws IOException {
+//        String message = "Properties in their respective order: ";
+//        ArrayList<Integer> tiles = Player.playerObjects.get(player).getProperties();
+//        ImageCombine combiner = new ImageCombine();
+//        BufferedImage rootImage = ImageIO.read(new File(Paths.get("Commands.java").toAbsolutePath().getParent().toString() + "\\src\\main\\java\\Images\\" + tiles.get(0) + ".JPG"));
+//
+//        for (int i = 0; i < tiles.size(); i++) {
+//            message += tiles.get(i) + ", ";
+//        }
+//
+//        for (int i = 1; i < tiles.size(); i++) {
+//            File f = new File(Paths.get("Commands.java").toAbsolutePath().getParent().toString() + "\\src\\main\\java\\Images\\" + tiles.get(0) + ".JPG");
+//            if (Objects.nonNull(f)) {
+//                rootImage = combiner.combine(rootImage, ImageIO.read(f), 200);
+//            } else {
+//                Say("Image Not Found");
+//            }
+//            // memory leak?
+//        }
+
+    private static void DisplayProperties(int player) {
         String message = "Properties in their respective order: ";
         ArrayList<Integer> tiles = Player.playerObjects.get(player).getProperties();
+        int numOfMessages = (int) Math.ceil(tiles.size() / 5);
 
-        for (Integer tile : tiles) {
-            message += tile + ", ";
+        for (int i = 0; i < tiles.size(); i++) {
+            message += tiles.get(i) + ", ";
         }
-        MessageAction actualMessage = event.getChannel().sendMessage(message);
+        Say(message);
 
-        for (Integer tile : tiles) {
-            File f = new File(Paths.get("Commands.java").toAbsolutePath().getParent().toString() + "\\src\\main\\java\\Images\\" + tile + ".JPG");
-            actualMessage.addFile(f);
+        for (int j = 0; j < numOfMessages; j++) {
+            message = "";
+            for (int i = 0; i < Math.min(5, tiles.size() - 5 * j); i++) {
+                message += BoardData.imageLinks.get(tiles.get(i)) +  " ";
+            }
+            Say(message);
         }
-        actualMessage.queue();
     }
 
     private static String GetDieEmote(int num) {
@@ -104,6 +138,17 @@ public class Commands extends ListenerAdapter {
         Bot.turn %= Player.players.size();
         Bot.rollingPhase = 0;
         Say(Player.playerNames.get(Bot.turn) + "'s turn");
+    }
+
+    public static void EndTurn(boolean doubles) {
+        if (doubles) {
+            Bot.rollingPhase = 0;
+            Say(Player.playerNames.get(Bot.turn) + " Rolled Doubles, So They Can Go Again!");
+            Player.playerObjects.get(Bot.turn).setRolledDoubles(false);
+        }
+        else {
+            EndTurn();
+        }
     }
 
     private static void DisplayTile(MessageReceivedEvent event, String message, int tile) {
@@ -171,10 +216,28 @@ public class Commands extends ListenerAdapter {
         if (event.getAuthor().getName().equals(Player.playerNames.get(Bot.turn))) {
             int die1 = (int) (Math.random() * 5 + 1);
             int die2 = (int) (Math.random() * 5 + 1);
-            Player.playerObjects.get(Bot.turn).addBoardPos(die1 + die2);
+            Player player = Player.playerObjects.get(Bot.turn);
+
+            if (player.getJailTime() > 1) {
+                Say("You are in jail! You can either\n1. Pay a $50 fine (-pay)\n2. Roll for doubles (-roll)");
+                Bot.rollingPhase = 3;// set rolling phase for the commands above
+                        // I made command for rolling doubles RollDoubles()
+                player.decrementJailTime();
+                return;
+            }
+            else if (player.getJailTime() == 1) {
+                Say("This is your third turn in jail. You have served out your sentence and have been released.");
+                player.decrementJailTime();
+            }
+
+            // checking for doubles
+            if (die1 == die2) {
+                player.setRolledDoubles(true);
+            }
+
+            player.addBoardPos(die1 + die2);
             Say(GetDieEmote(die1) + GetDieEmote(die2));
 
-            Player player = Player.playerObjects.get(Bot.turn);
             int boardPos = player.getBoardPos();
 
 
@@ -183,18 +246,33 @@ public class Commands extends ListenerAdapter {
 
                 if (owner == -1) { // option to buy / auction
                     Bot.rollingPhase = 1;
-                    if (BoardData.tileIDs[boardPos] == 0) {DisplayTile(event, "You Landed Here:\nCost: $" + BoardData.propertyData.get(boardPos)[0].toString(), boardPos);}
-                    else {DisplayTile(event, "You Landed Here:\nCost: $200", boardPos);}
+                    if (BoardData.tileIDs[boardPos] == 0) {
+                        DisplayTile(event, "You Landed Here:\nCost: $" + BoardData.propertyData.get(boardPos)[0].toString(), boardPos);
+                    }
+                    else {
+                        DisplayTile(event, "You Landed Here:\nCost: $200", boardPos);
+                    }
                 } else { // make them pay
-                    if (Bot.turn != owner) {Pay(boardPos, owner, player);}
-                    else {Say("Landed on your own property!");}
-                    EndTurn();
+                    if (Bot.turn != owner) {
+                        Pay(boardPos, owner, player);
+                    }
+                    else {
+                        Say("Landed on your own property!");
+                    }
+                    EndTurn(player.getRolledDoubles());
                 }
             }
             else {
-                EndTurn();
+                EndTurn(player.getRolledDoubles());
             }
         }
+    }
+
+    private static boolean RollDoubles() {
+        if (Math.random() * 5 == 0) {
+            return true;
+        }
+        return false;
     }
 
     private static void BuyProperty() {
@@ -204,7 +282,7 @@ public class Commands extends ListenerAdapter {
         Say("Bought for $" + amount);
         player.subtractMoney(amount);
         player.addProperty(tile);
-        EndTurn();
+        EndTurn(player.getRolledDoubles());
     }
 
     private static void AuctionProperty() {
@@ -225,7 +303,8 @@ public class Commands extends ListenerAdapter {
     }
 
     private static void BoardPos() {
-        Say(Player.playerNames.get(Bot.turn) + " is on tile " + Player.playerObjects.get(Bot.turn).getBoardPos());
+        String author = event.getAuthor().getName();
+        Say(author + " is on tile " + Player.playerObjects.get(Player.playerNames.indexOf(author)).getBoardPos());
     }
 
     private static void Pay(int property, int ownerID, Player payer) {
@@ -246,6 +325,13 @@ public class Commands extends ListenerAdapter {
         owner.addMoney(amount);
 
         Say("You Landed On " + Player.playerNames.get(ownerID) + "'s Property.\nYou Paid $" + amount);
+    }
+
+    private static void Imprison(int player) {
+        Player playerObject = Player.playerObjects.get(player);
+
+        playerObject.setBoardPos(10);
+        playerObject.setJailTime(3);
     }
 
     public static void Say (String msg) {

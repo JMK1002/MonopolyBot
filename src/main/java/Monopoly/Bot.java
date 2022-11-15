@@ -25,6 +25,4 @@ public class Bot {
                 .addEventListeners(new Commands())
                 .build();
     }
-
-
 }
