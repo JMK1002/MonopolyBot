@@ -6,8 +6,6 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
 import org.jetbrains.annotations.NotNull;
 
-import  me.chyxion.image.ImageCombine;
-
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -28,18 +26,18 @@ public class Commands extends ListenerAdapter {
         String paramater = (args.length <= 1) ? "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" : args[1];
         boolean isMention = paramater.charAt(0) == '<' && paramater.charAt(1) == '@' && paramater.charAt(paramater.length() - 1) == '>'; // if a string is a mention
 
-        // command, Bot phase, rolling phase, extra bool statements (with and)
+        // command, Main phase, rolling phase, extra bool statements (with and)
         Map<String, Boolean[]> commandMatrix = new HashMap<>();
-        commandMatrix.put("-clearplayers", new Boolean[]{Bot.phase == 0, true, true});
-        commandMatrix.put("-addplayer", new Boolean[]{Bot.phase == 0, true, isMention});
-        commandMatrix.put("-removeplayer", new Boolean[]{Bot.phase == 0, true, isMention});
-        commandMatrix.put("-displayplayers", new Boolean[]{Bot.phase == 0, true, true});
-        commandMatrix.put("-start", new Boolean[]{Bot.phase == 0, true, true});
-        commandMatrix.put("-roll", new Boolean[]{Bot.phase == 1, Bot.rollingPhase == 0, true});
-        commandMatrix.put("-buy", new Boolean[]{Bot.phase == 1, Bot.rollingPhase == 1, true});
-        commandMatrix.put("-auction", new Boolean[]{Bot.phase == 1, Bot.rollingPhase == 1, true});
-        commandMatrix.put("-bid", new Boolean[]{Bot.phase == 1, Bot.rollingPhase == 2, true});
-        commandMatrix.put("-quit", new Boolean[]{Bot.phase == 1, Bot.rollingPhase == 2, true});
+        commandMatrix.put("-clearplayers", new Boolean[]{Main.phase == 0, true, true});
+        commandMatrix.put("-addplayer", new Boolean[]{Main.phase == 0, true, isMention});
+        commandMatrix.put("-removeplayer", new Boolean[]{Main.phase == 0, true, isMention});
+        commandMatrix.put("-displayplayers", new Boolean[]{Main.phase == 0, true, true});
+        commandMatrix.put("-start", new Boolean[]{Main.phase == 0, true, true});
+        commandMatrix.put("-roll", new Boolean[]{Main.phase == 1, Main.rollingPhase == 0, true});
+        commandMatrix.put("-buy", new Boolean[]{Main.phase == 1, Main.rollingPhase == 1, true});
+        commandMatrix.put("-auction", new Boolean[]{Main.phase == 1, Main.rollingPhase == 1, true});
+        commandMatrix.put("-bid", new Boolean[]{Main.phase == 1, Main.rollingPhase == 2, true});
+        commandMatrix.put("-quit", new Boolean[]{Main.phase == 1, Main.rollingPhase == 2, true});
         commandMatrix.put("-money", new Boolean[]{true, true, true});
         commandMatrix.put("-boardpos", new Boolean[]{true, true, true});
         commandMatrix.put("-properties", new Boolean[]{true, true, true});
@@ -70,7 +68,7 @@ public class Commands extends ListenerAdapter {
             case "-bid" -> BidOnAuction(args);
             case "-quit" -> QuitBid();
             case "-boardpos" -> BoardPos();
-//          case "-properties" -> DisplayProperties(Bot.turn);
+//          case "-properties" -> DisplayProperties(Main.turn);
         }
     }
 
@@ -134,17 +132,17 @@ public class Commands extends ListenerAdapter {
     }
 
     public static void EndTurn() {
-        Bot.turn += 1; // ending turn
-        Bot.turn %= Player.players.size();
-        Bot.rollingPhase = 0;
-        Say(Player.playerNames.get(Bot.turn) + "'s turn");
+        Main.turn += 1; // ending turn
+        Main.turn %= Player.players.size();
+        Main.rollingPhase = 0;
+        Say(Player.playerNames.get(Main.turn) + "'s turn");
     }
 
     public static void EndTurn(boolean doubles) {
         if (doubles) {
-            Bot.rollingPhase = 0;
-            Say(Player.playerNames.get(Bot.turn) + " Rolled Doubles, So They Can Go Again!");
-            Player.playerObjects.get(Bot.turn).setRolledDoubles(false);
+            Main.rollingPhase = 0;
+            Say(Player.playerNames.get(Main.turn) + " Rolled Doubles, So They Can Go Again!");
+            Player.playerObjects.get(Main.turn).setRolledDoubles(false);
         }
         else {
             EndTurn();
@@ -170,14 +168,14 @@ public class Commands extends ListenerAdapter {
         if (Player.players.contains(args[1])) {
             return;
         }
-        String name = Bot.bot.retrieveUserById(args[1].substring(2, args[1].length() - 1)).complete().getName();
+        String name = Main.bot.retrieveUserById(args[1].substring(2, args[1].length() - 1)).complete().getName();
         Player.players.add(args[1]);
         Player.playerNames.add(name);
         Say("Added Player");
     }
 
     private static void RemovePlayer(String[] args) {
-        String name = Bot.bot.retrieveUserById(args[1].substring(2, args[1].length() - 1)).complete().getName();
+        String name = Main.bot.retrieveUserById(args[1].substring(2, args[1].length() - 1)).complete().getName();
         Player.players.remove(args[1]);
         Player.playerNames.remove(name);
         Say("Removed Player");
@@ -193,9 +191,9 @@ public class Commands extends ListenerAdapter {
     }
 
     private static void Start() {
-        Bot.phase = 1;
-        Bot.rollingPhase = 0;
-        Bot.turn = 0;
+        Main.phase = 1;
+        Main.rollingPhase = 0;
+        Main.turn = 0;
 
         List<Player> players = new ArrayList<>();
         for (int i = 0; i < Player.players.size(); i++) {
@@ -204,7 +202,7 @@ public class Commands extends ListenerAdapter {
         Player.playerObjects = players;
 
         Say("Game Started");
-        Say(Player.playerNames.get(Bot.turn) + "'s turn");
+        Say(Player.playerNames.get(Main.turn) + "'s turn");
     }
 
     private static void DisplayMoney() {
@@ -213,48 +211,34 @@ public class Commands extends ListenerAdapter {
     }
 
     private static void Roll() {
-        if (event.getAuthor().getName().equals(Player.playerNames.get(Bot.turn))) {
-            int die1 = (int) (Math.random() * 5 + 1);
-            int die2 = (int) (Math.random() * 5 + 1);
-            Player player = Player.playerObjects.get(Bot.turn);
+        if (event.getAuthor().getName().equals(Player.playerNames.get(Main.turn))) {
+            Dice dice = new Dice();
+            Player player = Player.playerObjects.get(Main.turn);
+            int dice1 = dice.getDie1();
+            int dice2 = dice.getDie2();
+            int sum = dice.getSum();
+            int boardPos = player.getBoardPos();
+            boolean doubles = dice.rolledDoubles();
 
-            if (player.getJailTime() > 1) {
-                Say("You are in jail! You can either\n1. Pay a $50 fine (-pay)\n2. Roll for doubles (-roll)");
-                Bot.rollingPhase = 3;// set rolling phase for the commands above
-                        // I made command for rolling doubles RollDoubles()
-                player.decrementJailTime();
-                return;
-            }
-            else if (player.getJailTime() == 1) {
-                Say("This is your third turn in jail. You have served out your sentence and have been released.");
-                player.decrementJailTime();
-            }
 
             // checking for doubles
-            if (die1 == die2) {
+            if (doubles) {
                 player.setRolledDoubles(true);
             }
 
-            player.addBoardPos(die1 + die2);
-            Say(GetDieEmote(die1) + GetDieEmote(die2));
+            player.addBoardPos(sum);
+            Say(GetDieEmote(dice1) + GetDieEmote(dice2));
 
-            int boardPos = player.getBoardPos();
+            Property property = BoardData.propertyData.get(boardPos);
+            if (property != null && (property.getTileType() == 0 || property.getTileType() == 1)) {
+                int owner = property.getOwner();
 
-
-            if (BoardData.tileIDs[boardPos] == 0 || BoardData.tileIDs[boardPos] == 1) {
-                int owner = PropertyOwned(boardPos);
-
-                if (owner == -1) { // option to buy / auction
-                    Bot.rollingPhase = 1;
-                    if (BoardData.tileIDs[boardPos] == 0) {
-                        DisplayTile(event, "You Landed Here:\nCost: $" + BoardData.propertyData.get(boardPos)[0].toString(), boardPos);
-                    }
-                    else {
-                        DisplayTile(event, "You Landed Here:\nCost: $200", boardPos);
-                    }
+                if (!property.hasOwner()) { // option to buy / auction
+                    Main.rollingPhase = 1;
+                    DisplayTile(event, "You Landed Here:\nCost: $" + BoardData.propertyData.get(boardPos).getCost(), boardPos);
                 } else { // make them pay
-                    if (Bot.turn != owner) {
-                        Pay(boardPos, owner, player);
+                    if (Main.turn != owner) {
+                        Player.PayProperty(boardPos, owner, player);
                     }
                     else {
                         Say("Landed on your own property!");
@@ -268,17 +252,10 @@ public class Commands extends ListenerAdapter {
         }
     }
 
-    private static boolean RollDoubles() {
-        if (Math.random() * 5 == 0) {
-            return true;
-        }
-        return false;
-    }
-
     private static void BuyProperty() {
-        Player player = Player.playerObjects.get(Bot.turn);
+        Player player = Player.playerObjects.get(Main.turn);
         int tile = player.getBoardPos();
-        int amount = (BoardData.tileIDs[tile] == 0) ? BoardData.propertyData.get(tile)[0] : 200;
+        int amount = BoardData.propertyData.get(tile).getCost();
         Say("Bought for $" + amount);
         player.subtractMoney(amount);
         player.addProperty(tile);
@@ -286,8 +263,8 @@ public class Commands extends ListenerAdapter {
     }
 
     private static void AuctionProperty() {
-        Bot.rollingPhase = 2;
-        auction = new Auction(Bot.turn, Player.playerObjects.get(Bot.turn).getBoardPos());
+        Main.rollingPhase = 2;
+        auction = new Auction(Main.turn, Player.playerObjects.get(Main.turn).getBoardPos());
         Say("The Auction has Started!");
     }
 
@@ -307,32 +284,12 @@ public class Commands extends ListenerAdapter {
         Say(author + " is on tile " + Player.playerObjects.get(Player.playerNames.indexOf(author)).getBoardPos());
     }
 
-    private static void Pay(int property, int ownerID, Player payer) {
-        int amount = -1;
-        Player owner = Player.playerObjects.get(ownerID);
-        switch (BoardData.tileIDs[property]) {
-            case 0:
-                amount = BoardData.propertyData.get(property)[1 + owner.getHouses(property)];
-                break;
-            case 1:
-                ArrayList<Integer> properties = owner.getProperties();
-                int railroadsOwned = 0;
-                for (int i = 0; i < properties.size(); i++) {if (BoardData.tileIDs[properties.get(i)] == 1) {railroadsOwned++;}}
-                amount = 25 * 2^(railroadsOwned - 1);
-                break;
-        }
-        payer.subtractMoney(amount);
-        owner.addMoney(amount);
-
-        Say("You Landed On " + Player.playerNames.get(ownerID) + "'s Property.\nYou Paid $" + amount);
-    }
-
-    private static void Imprison(int player) {
-        Player playerObject = Player.playerObjects.get(player);
-
-        playerObject.setBoardPos(10);
-        playerObject.setJailTime(3);
-    }
+//    private static void Imprison(int player) {
+//        Player playerObject = Player.playerObjects.get(player);
+//
+//        playerObject.setBoardPos(10);
+//        playerObject.setJailTime(3);
+//    }
 
     public static void Say (String msg) {
         event.getChannel().sendMessage(msg).queue();

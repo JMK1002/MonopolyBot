@@ -9,8 +9,6 @@ public class Player {
     private int boardPos;
     private int money;
     private boolean rolledDoubles;
-    private int jailTime;
-    private boolean inJail;
     private ArrayList<Integer> properties;
     private ArrayList<Integer> houses;
     private int[] coloredProperties;
@@ -19,7 +17,7 @@ public class Player {
     public static List<String> playerNames = new ArrayList<>();
     public static List<Player> playerObjects;
 
-    public Player (String name, String mention) {
+    public Player(String name, String mention) {
         this.name = name;
         this.mention = mention;
         coloredProperties = new int[8];
@@ -29,10 +27,9 @@ public class Player {
         boardPos = 0;
         money = 1500;
         rolledDoubles = false;
-        inJail = false;
     }
 
-    public void addBoardPos (int amount) {
+    public void addBoardPos(int amount) {
         boardPos += amount;
 
         if (boardPos >= 40) {
@@ -41,15 +38,15 @@ public class Player {
         }
     }
 
-    public void setBoardPos (int tile) {
+    public void setBoardPos(int tile) {
         boardPos = tile;
     }
 
-    public void addMoney (int amount) {
+    public void addMoney(int amount) {
         money += amount;
     }
 
-    public void subtractMoney (int amount) {
+    public void subtractMoney(int amount) {
         money -= amount;
     }
 
@@ -65,15 +62,16 @@ public class Player {
         int color = BoardData.monopolyData[property];
         properties.add(property);
         houses.add(0);
-        if (color == 0) {return;}
+        if (color == 0) {
+            return;
+        }
         coloredProperties[color - 1]++;
         if (!monopolies.contains(color) && (color == 1 || color == 8)) {
             if (coloredProperties[color - 1] == 2) {
                 monopolies.add(color);
                 Commands.Say("Monopoly " + color + " has been obtained!!!");
             }
-        }
-        else {
+        } else {
             if (coloredProperties[color - 1] == 3) {
                 monopolies.add(color);
                 Commands.Say("Monopoly " + color + " has been obtained!!!");
@@ -92,9 +90,8 @@ public class Player {
             if (houses.get(propertyIndex) < 4) {
                 houses.set(propertyIndex, houses.get(propertyIndex) + 1);
             }
-            subtractMoney(BoardData.propertyData.get(propertyIndex)[7]);
-        }
-        else {
+            subtractMoney(BoardData.propertyData.get(propertyIndex).getHouseCost());
+        } else {
             Commands.Say("You don't have the monopoly for this card!");
         }
     }
@@ -106,30 +103,40 @@ public class Player {
             if (houses.get(propertyIndex) > -1) {
                 houses.set(propertyIndex, houses.get(propertyIndex) - 1);
             }
-            addMoney(BoardData.propertyData.get(propertyIndex)[7] / 2);
-        }
-        else {
+            addMoney(BoardData.propertyData.get(propertyIndex).getHouseCost() / 2);
+        } else {
             Commands.Say("You don't have the monopoly for this card!");
         }
+    }
+
+    public static void PayProperty(int property, int ownerID, Player payer) {
+        int amount = -1;
+        Player owner = Player.playerObjects.get(ownerID);
+        switch (BoardData.tileIDs[property]) {
+            case 0:
+                amount = BoardData.propertyData.get(property).getHousesRent(1 + owner.getHouses(property));
+                break;
+            case 1:
+                ArrayList<Integer> properties = owner.getProperties();
+                int railroadsOwned = 0;
+                for (int i = 0; i < properties.size(); i++) {if (BoardData.tileIDs[properties.get(i)] == 1) {railroadsOwned++;}}
+                amount = 25 * 2^(railroadsOwned - 1);
+                break;
+        }
+        payer.subtractMoney(amount);
+        owner.addMoney(amount);
+
+        Commands.Say("You Landed On " + Player.playerNames.get(ownerID) + "'s Property.\nYou Paid $" + amount);
     }
 
     public int getMoney() {
         return money;
     }
 
-    public boolean getRolledDoubles() { return rolledDoubles; }
-
+    public boolean getRolledDoubles() {
+        return rolledDoubles;
+    }
     public void setRolledDoubles(boolean rolledDoubles) {
         this.rolledDoubles = rolledDoubles;
     }
-
-    public void setJailTime(int jailTime) {
-        this.jailTime = jailTime;
-    }
-
-    public int getJailTime() {
-        return jailTime;
-    }
-
-    public void decrementJailTime() { jailTime -= 1; }
 }

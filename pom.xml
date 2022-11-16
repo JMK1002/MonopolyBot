@@ -25,11 +25,6 @@
             <version>5.0.0-alpha.17</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/me.chyxion/image-combine -->
-        <dependency>
-            <groupId>me.chyxion</groupId>
-            <artifactId>image-combine</artifactId>
-            <version>0.0.1-RELEASE</version>
-        </dependency>
     </dependencies>
 
 

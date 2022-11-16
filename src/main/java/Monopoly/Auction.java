@@ -83,7 +83,7 @@ public class Auction {
     }
 
     private void Announce() {
-        Commands.Say(Player.playerNames.get(topBidder) + " Bid $" + amount + "\nOriginal Price: $" + BoardData.propertyData.get(property)[0]);
+        Commands.Say(Player.playerNames.get(topBidder) + " Bid $" + amount + "\nOriginal Price: $" + BoardData.propertyData.get(property).getCost());
     }
 
     private void CantBid() { Commands.Say("Could not bid on this property!"); }
