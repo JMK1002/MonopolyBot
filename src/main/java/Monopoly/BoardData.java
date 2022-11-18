@@ -10,6 +10,7 @@ public class BoardData {
     public static int[] monopolyData;
 
     public static void innit() {
+        System.out.println();
         propertyData = new HashMap<>();
         imageLinks = new HashMap<>();
         // 0 is property, 1 is railroad, 2 is chance, 3 is chest, 4 is electric / water works, 5 is other (taxes, jail, go, etc)

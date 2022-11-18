@@ -69,12 +69,12 @@ public class Player {
         if (!monopolies.contains(color) && (color == 1 || color == 8)) {
             if (coloredProperties[color - 1] == 2) {
                 monopolies.add(color);
-                Commands.Say("Monopoly " + color + " has been obtained!!!");
+                Discord.Say("Monopoly " + color + " has been obtained!!!");
             }
         } else {
             if (coloredProperties[color - 1] == 3) {
                 monopolies.add(color);
-                Commands.Say("Monopoly " + color + " has been obtained!!!");
+                Discord.Say("Monopoly " + color + " has been obtained!!!");
             }
         }
     }
@@ -92,7 +92,7 @@ public class Player {
             }
             subtractMoney(BoardData.propertyData.get(propertyIndex).getHouseCost());
         } else {
-            Commands.Say("You don't have the monopoly for this card!");
+            Discord.Say("You don't have the monopoly for this card!");
         }
     }
 
@@ -105,7 +105,7 @@ public class Player {
             }
             addMoney(BoardData.propertyData.get(propertyIndex).getHouseCost() / 2);
         } else {
-            Commands.Say("You don't have the monopoly for this card!");
+            Discord.Say("You don't have the monopoly for this card!");
         }
     }
 
@@ -126,7 +126,7 @@ public class Player {
         payer.subtractMoney(amount);
         owner.addMoney(amount);
 
-        Commands.Say("You Landed On " + Player.playerNames.get(ownerID) + "'s Property.\nYou Paid $" + amount);
+        Discord.Say("You Landed On " + Player.playerNames.get(ownerID) + "'s Property.\nYou Paid $" + amount);
     }
 
     public int getMoney() {

@@ -12,7 +12,7 @@ public class Auction {
 
 
     public Auction(int topBidder, int property) {
-        Commands.Say("Bid started with a starting bid of $1 from " + Player.playerNames.get(topBidder));
+        Discord.Say("Bid started with a starting bid of $1 from " + Player.playerNames.get(topBidder));
         this.topBidder = topBidder;
         this.property = property;
         quitBidders = new ArrayList<>();
@@ -60,13 +60,13 @@ public class Auction {
         }
 
         if (topBidder == player) {
-            Commands.Say("Cant Quit As the Top Bidder! :)");
+            Discord.Say("Cant Quit As the Top Bidder! :)");
             return;
         }
 
         if (!quitBidders.contains(player)) {
             quitBidders.add(player);
-            Commands.Say(Player.playerNames.get(player) + " Has Quit the Bid!");
+            Discord.Say(Player.playerNames.get(player) + " Has Quit the Bid!");
             if (quitBidders.size() == Player.playerObjects.size() - 1) {
                 FinishAuction();
             }
@@ -75,16 +75,16 @@ public class Auction {
 
     private void FinishAuction() {
         running = false;
-        Commands.Say(Player.playerNames.get(topBidder) + " Won the bid for $" + amount);
+        Discord.Say(Player.playerNames.get(topBidder) + " Won the bid for $" + amount);
         Player.playerObjects.get(topBidder).subtractMoney(amount);
         Player.playerObjects.get(topBidder).addProperty(property);
         System.out.println(Player.playerObjects.get(topBidder).getMoney());
-        Commands.EndTurn();
+        Monopoly.EndTurn();
     }
 
     private void Announce() {
-        Commands.Say(Player.playerNames.get(topBidder) + " Bid $" + amount + "\nOriginal Price: $" + BoardData.propertyData.get(property).getCost());
+        Discord.Say(Player.playerNames.get(topBidder) + " Bid $" + amount + "\nOriginal Price: $" + BoardData.propertyData.get(property).getCost());
     }
 
-    private void CantBid() { Commands.Say("Could not bid on this property!"); }
+    private void CantBid() { Discord.Say("Could not bid on this property!"); }
 }
