@@ -1,5 +1,7 @@
 package Monopoly;
 
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +14,12 @@ public class Auction {
 
 
     public Auction(int topBidder, int property) {
-        Discord.Say("Bid started with a starting bid of $1 from " + Player.playerNames.get(topBidder));
+        ArrayList<Button> buttons = new ArrayList<>();
+        buttons.add(Button.danger("quit", "Quit Auction"));
+
+        Discord.append("Bid started with a starting bid of $1 from " + Player.playerNames.get(topBidder));
+        Discord.addButtons(buttons);
+        Discord.reply();
         this.topBidder = topBidder;
         this.property = property;
         quitBidders = new ArrayList<>();
@@ -28,9 +35,9 @@ public class Auction {
         amount = -1;
     }
 
-    public void Bid (int bidder, int amount) {
+    public void bid(int bidder, int amount) {
         if (quitBidders.contains(bidder) || Player.playerObjects.get(bidder).getMoney() < amount) {
-            CantBid();
+            cantBid();
             return;
         }
 
@@ -41,50 +48,63 @@ public class Auction {
         if (amount > this.amount) {
             topBidder = bidder;
             this.amount = amount;
-            Announce();
+            announce();
 
-            for (int i = 0; i < Player.players.size(); i++) {
-                if (Player.playerObjects.get(i).getMoney() <= amount) {
-                    QuitBid(i);
-                }
-            }
+//            for (int i = 0; i < Player.players.size(); i++) {
+//                if (Player.playerObjects.get(i).getMoney() <= amount) {
+//                    QuitBid(i, true);
+//                }
+//            }
             return;
         }
 
-        CantBid();
+        cantBid();
     }
 
-    public void QuitBid(int player) {
+    public void quitBid(int player, boolean forced) {
         if (!running) {
             return;
         }
 
         if (topBidder == player) {
-            Discord.Say("Cant Quit As the Top Bidder! :)");
+            Discord.append("Cant Quit As the Top Bidder! :)");
+            Discord.reply();
             return;
         }
 
         if (!quitBidders.contains(player)) {
             quitBidders.add(player);
-            Discord.Say(Player.playerNames.get(player) + " Has Quit the Bid!");
+            Discord.append(Player.playerNames.get(player) + " Has Quit the Bid!");
             if (quitBidders.size() == Player.playerObjects.size() - 1) {
-                FinishAuction();
+                finishAuction(forced);
+            }
+            else {
+                Discord.reply();
             }
         }
     }
 
-    private void FinishAuction() {
+    private void finishAuction(boolean forced) {
         running = false;
-        Discord.Say(Player.playerNames.get(topBidder) + " Won the bid for $" + amount);
+        Discord.append(Player.playerNames.get(topBidder) + " Won the bid for $" + amount);
         Player.playerObjects.get(topBidder).subtractMoney(amount);
         Player.playerObjects.get(topBidder).addProperty(property);
+        BoardData.propertyData.get(property).setOwner(topBidder);
         System.out.println(Player.playerObjects.get(topBidder).getMoney());
-        Monopoly.EndTurn();
+        Monopoly.endTurn();
     }
 
-    private void Announce() {
-        Discord.Say(Player.playerNames.get(topBidder) + " Bid $" + amount + "\nOriginal Price: $" + BoardData.propertyData.get(property).getCost());
+    private void announce() {
+        ArrayList<Button> buttons = new ArrayList<>();
+        buttons.add(Button.danger("quit", "Quit Auction"));
+
+        Discord.append(Player.playerNames.get(topBidder) + " Bid $" + amount + "\nOriginal Price: $" + BoardData.propertyData.get(property).getCost());
+        Discord.addButtons(buttons);
+        Discord.reply();
     }
 
-    private void CantBid() { Discord.Say("Could not bid on this property!"); }
+    private void cantBid() {
+        Discord.append("Could not bid on this property!");
+        Discord.reply();
+    }
 }

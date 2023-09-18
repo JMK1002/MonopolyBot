@@ -5,6 +5,7 @@ import java.util.Map;
 
 public class BoardData {
     public static Map<Integer, Property> propertyData;
+    public static Map<Integer, Tile> cardData;
     public static Map<Integer, String> imageLinks;
     public static int[] tileIDs;
     public static int[] monopolyData;
@@ -12,6 +13,7 @@ public class BoardData {
     public static void innit() {
         System.out.println();
         propertyData = new HashMap<>();
+        cardData = new HashMap<>();
         imageLinks = new HashMap<>();
         // 0 is property, 1 is railroad, 2 is chance, 3 is chest, 4 is electric / water works, 5 is other (taxes, jail, go, etc)
         tileIDs = new int[]{5, 0, 3, 0, 5, 1, 0, 2, 0, 0, 5, 0, 4, 0, 0, 1, 0, 3, 0, 0, 5, 0, 2, 0, 0, 1, 0, 0, 4, 0, 5, 0, 0, 3, 0, 1, 2, 0, 5, 0};
@@ -19,6 +21,10 @@ public class BoardData {
         // Brown, Light Blue, Magenta, Orange, Red, Yellow, Green, Dark Blue
         // 1      2           3        4       5    6       7      8     
         monopolyData = new int[]{0, 1, 0, 1, 0, 0, 2, 0, 2, 2, 0, 3, 0, 3, 3, 0, 4, 0, 4, 4, 0, 5, 0, 5, 5, 0, 6, 6, 0, 6, 0, 7, 7, 0, 7, 0, 0, 8, 0, 8};
+
+        cardData.put(7, new Chance(7));
+        cardData.put(22, new Chance(22));
+        cardData.put(36, new Chance(36));
 
         // board pos, cost, rent, rent with houses 1, 2, 3, 4, hotel cost, cost for houses
         propertyData.put(1, new Property(1, 60, 2, new int[]{10, 30, 90, 160, 250}, 50, 1));
@@ -28,6 +34,7 @@ public class BoardData {
         propertyData.put(8, new Property(8, 100, 6, new int[]{30, 90, 270, 400, 550}, 50, 2));
         propertyData.put(9, new Property(9, 120, 8, new int[]{40, 100, 300, 450, 600}, 50, 2));
         propertyData.put(11, new Property(11, 140, 10, new int[]{50, 150, 450, 625, 750}, 100, 3));
+        propertyData.put(12, new Utility(12));
         propertyData.put(13, new Property(13, 140, 10, new int[]{50, 150, 450, 625, 750}, 100, 3));
         propertyData.put(14, new Property(14, 160, 12, new int[]{60, 180, 500, 700, 900}, 100, 3));
         propertyData.put(15, new Railroad(15));
@@ -40,6 +47,7 @@ public class BoardData {
         propertyData.put(25, new Railroad(25));
         propertyData.put(26, new Property(26, 260, 22, new int[]{110, 330, 800, 975, 1150}, 150, 6));
         propertyData.put(27, new Property(27, 260, 22, new int[]{110, 330, 800, 975, 1150}, 150, 6));
+        propertyData.put(28, new Utility(12));
         propertyData.put(29, new Property(29, 280, 24, new int[]{120, 360, 850, 1025, 1200}, 150, 6));
         propertyData.put(31, new Property(31, 300, 26, new int[]{130, 390, 900, 1100, 1275}, 200, 7));
         propertyData.put(32, new Property(32, 300, 26, new int[]{130, 390, 900, 1100, 1275}, 200, 7));
